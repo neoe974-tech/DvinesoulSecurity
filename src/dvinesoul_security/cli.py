@@ -5,6 +5,10 @@ from dvinesoul_security.core.snapshot_text import snapshot_to_text
 from dvinesoul_security.report.inspection import inspect_file
 from dvinesoul_security.report.json import report_to_json
 from dvinesoul_security.report.text import report_to_text
+from dvinesoul_security.security.system_assessment import assess_system
+from dvinesoul_security.security.system_assessment_text import (
+    system_assessment_to_text,
+)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -51,7 +55,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     subparsers.add_parser(
         "system",
-        help="Show a read-only system snapshot.",
+        help="Show a read-only system snapshot and assessment.",
     )
 
     return parser
@@ -78,7 +82,11 @@ def main() -> int:
 
     if args.command == "system":
         snapshot = collect_system_snapshot()
+
         print(snapshot_to_text(snapshot))
+        print()
+        print(system_assessment_to_text(assess_system(snapshot)))
+
         return 0
 
     parser.print_help()
