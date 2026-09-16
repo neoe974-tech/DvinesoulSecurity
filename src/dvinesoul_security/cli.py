@@ -1,5 +1,7 @@
 import argparse
 
+from dvinesoul_security.core.snapshot import collect_system_snapshot
+from dvinesoul_security.core.snapshot_text import snapshot_to_text
 from dvinesoul_security.report.inspection import inspect_file
 from dvinesoul_security.report.json import report_to_json
 from dvinesoul_security.report.text import report_to_text
@@ -47,6 +49,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Path to an integrity baseline file.",
     )
 
+    subparsers.add_parser(
+        "system",
+        help="Show a read-only system snapshot.",
+    )
+
     return parser
 
 
@@ -54,22 +61,27 @@ def main() -> int:
     parser = build_parser()
     args = parser.parse_args()
 
-    if args.command != "inspect":
-        parser.print_help()
+    if args.command == "inspect":
+        report = inspect_file(
+            args.path,
+            yara_rules=args.yara_rules,
+            baseline=args.baseline,
+            strings_limit=args.strings_limit,
+        )
+
+        if args.json:
+            print(report_to_json(report))
+        else:
+            print(report_to_text(report))
+
         return 0
 
-    report = inspect_file(
-        args.path,
-        yara_rules=args.yara_rules,
-        baseline=args.baseline,
-        strings_limit=args.strings_limit,
-    )
+    if args.command == "system":
+        snapshot = collect_system_snapshot()
+        print(snapshot_to_text(snapshot))
+        return 0
 
-    if args.json:
-        print(report_to_json(report))
-    else:
-        print(report_to_text(report))
-
+    parser.print_help()
     return 0
 
 
