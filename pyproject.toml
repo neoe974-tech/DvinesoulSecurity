@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=70"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dvinesoul-security"
+version = "0.1.0"
+description = "Dvinesoul local security and forensic platform"
+requires-python = ">=3.12"
+dependencies = []
+
+[project.scripts]
+dvinesoul-security = "dvinesoul_security.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
