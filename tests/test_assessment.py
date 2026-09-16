@@ -1,6 +1,10 @@
 from types import SimpleNamespace
 
-from dvinesoul_security.security.assessment import assess_report
+from dvinesoul_security.security.assessment import (
+    Finding,
+    assess_report,
+    calculate_risk_score,
+)
 
 
 def test_assess_report_detects_sensitive_strings():
@@ -50,3 +54,13 @@ def test_assess_report_detects_yara_match():
         and finding.severity == "info"
         for finding in findings
     )
+
+
+def test_calculate_risk_score():
+    findings = [
+        Finding("test", "info", "Info", "Informational"),
+        Finding("test", "medium", "Medium", "Medium finding"),
+        Finding("test", "high", "High", "High finding"),
+    ]
+
+    assert calculate_risk_score(findings) == 9

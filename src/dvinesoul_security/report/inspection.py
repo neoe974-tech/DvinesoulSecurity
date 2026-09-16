@@ -4,7 +4,10 @@ from dvinesoul_security.report.integrity_adapter import add_integrity_analysis
 from dvinesoul_security.report.models import InspectionReport
 from dvinesoul_security.report.strings_adapter import add_strings_analysis
 from dvinesoul_security.report.yara_adapter import add_yara_analysis
-from dvinesoul_security.security.assessment import assess_report
+from dvinesoul_security.security.assessment import (
+    assess_report,
+    calculate_risk_score,
+)
 
 
 def inspect_file(
@@ -32,6 +35,7 @@ def inspect_file(
         "assessment",
         {
             "finding_count": len(findings),
+            "risk_score": calculate_risk_score(findings),
             "findings": [
                 {
                     "category": finding.category,
