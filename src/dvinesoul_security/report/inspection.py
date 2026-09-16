@@ -4,6 +4,7 @@ from dvinesoul_security.report.integrity_adapter import add_integrity_analysis
 from dvinesoul_security.report.models import InspectionReport
 from dvinesoul_security.report.strings_adapter import add_strings_analysis
 from dvinesoul_security.report.yara_adapter import add_yara_analysis
+from dvinesoul_security.security.assessment import assess_report
 
 
 def inspect_file(
@@ -24,5 +25,23 @@ def inspect_file(
 
     if baseline:
         add_integrity_analysis(report, baseline)
+
+    findings = assess_report(report)
+
+    report.add_section(
+        "assessment",
+        {
+            "finding_count": len(findings),
+            "findings": [
+                {
+                    "category": finding.category,
+                    "severity": finding.severity,
+                    "title": finding.title,
+                    "detail": finding.detail,
+                }
+                for finding in findings
+            ],
+        },
+    )
 
     return report
