@@ -109,4 +109,34 @@ def report_to_text(report: InspectionReport) -> str:
 
         lines.append("")
 
+    assessment = sections.get("assessment")
+    if assessment:
+        lines.extend(
+            [
+                "=== ASSESSMENT ===",
+                "",
+                f"Risk score : {assessment.get('risk_score', 0)}",
+                f"Findings   : {assessment.get('finding_count', 0)}",
+                "",
+            ]
+        )
+
+        findings = assessment.get("findings", [])
+
+        if findings:
+            for finding in findings:
+                severity = finding.get("severity", "unknown").upper()
+                category = finding.get("category", "unknown")
+                title = finding.get("title", "Untitled finding")
+                detail = finding.get("detail", "")
+
+                lines.append(
+                    f"[{severity}] [{category}] {title}"
+                )
+                lines.append(f"  {detail}")
+                lines.append("")
+        else:
+            lines.append("No assessment findings.")
+            lines.append("")
+
     return "\n".join(lines)

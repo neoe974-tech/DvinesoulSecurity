@@ -2,6 +2,7 @@ import argparse
 
 from dvinesoul_security.report.inspection import inspect_file
 from dvinesoul_security.report.json import report_to_json
+from dvinesoul_security.report.text import report_to_text
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -66,24 +67,8 @@ def main() -> int:
 
     if args.json:
         print(report_to_json(report))
-        return 0
-
-    assessment = report.sections.get("assessment", {})
-    findings = assessment.get("findings", [])
-
-    print(f"File: {report.path}")
-    print(f"Risk score: {assessment.get('risk_score', 0)}")
-    print(f"Findings: {assessment.get('finding_count', 0)}")
-
-    if findings:
-        print("\nFindings:")
-        for finding in findings:
-            print(
-                f"- [{finding['severity'].upper()}] "
-                f"{finding['title']}: {finding['detail']}"
-            )
     else:
-        print("\nNo assessment findings.")
+        print(report_to_text(report))
 
     return 0
 
