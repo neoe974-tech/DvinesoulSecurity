@@ -17,3 +17,7 @@ logs/*
 .DS_Store
 .vscode/
 .idea/
+
+# Generated report files
+reports/*
+!reports/.gitkeep
