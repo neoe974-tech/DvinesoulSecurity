@@ -43,6 +43,7 @@ def assess_system(snapshot: SystemSnapshot) -> list[Finding]:
                     f"{connection.local}"
                     f" (process: {connection.process})."
                 ),
+                is_observation=True,
             )
         )
 
@@ -63,6 +64,7 @@ def assess_system(snapshot: SystemSnapshot) -> list[Finding]:
                     f"{connection.local} to {connection.remote}"
                     f" (process: {connection.process})."
                 ),
+                is_observation=True,
             )
         )
 

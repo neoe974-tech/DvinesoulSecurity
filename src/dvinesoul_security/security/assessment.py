@@ -8,6 +8,7 @@ class Finding:
     severity: str
     title: str
     detail: str
+    is_observation: bool = False
 
 
 SEVERITY_WEIGHTS = {
@@ -99,4 +100,5 @@ def calculate_risk_score(findings: list[Finding]) -> int:
     return sum(
         SEVERITY_WEIGHTS.get(finding.severity.lower(), 0)
         for finding in findings
+        if not finding.is_observation
     )

@@ -1,8 +1,8 @@
 from dvinesoul_security.core.snapshot import SystemSnapshot
-from dvinesoul_security.core.processes import ProcessInfo
 from dvinesoul_security.core.services import ServiceInfo
 from dvinesoul_security.network.connections import ConnectionInfo
 from dvinesoul_security.network.interfaces import InterfaceInfo
+from dvinesoul_security.security.assessment import calculate_risk_score
 from dvinesoul_security.security.system_assessment import assess_system
 
 
@@ -40,10 +40,11 @@ def test_assess_system_detects_failed_service():
     assert findings[0].category == "service"
     assert findings[0].severity == "high"
     assert findings[0].title == "Failed system service detected"
+    assert findings[0].is_observation is False
     assert "example.service" in findings[0].detail
 
 
-def test_assess_system_detects_listening_socket():
+def test_assess_system_detects_listening_socket_as_observation():
     snapshot = empty_snapshot(
         connections=[
             ConnectionInfo(
@@ -62,11 +63,12 @@ def test_assess_system_detects_listening_socket():
     assert findings[0].category == "network"
     assert findings[0].severity == "info"
     assert findings[0].title == "Listening network socket detected"
+    assert findings[0].is_observation is True
     assert "0.0.0.0:22" in findings[0].detail
     assert "sshd" in findings[0].detail
 
 
-def test_assess_system_detects_established_connection():
+def test_assess_system_detects_established_connection_as_observation():
     snapshot = empty_snapshot(
         connections=[
             ConnectionInfo(
@@ -85,6 +87,7 @@ def test_assess_system_detects_established_connection():
     assert findings[0].category == "network"
     assert findings[0].severity == "info"
     assert findings[0].title == "Established network connection detected"
+    assert findings[0].is_observation is True
     assert "198.51.100.20:443" in findings[0].detail
 
 
@@ -115,12 +118,32 @@ def test_assess_system_detects_interface_errors():
     assert findings[0].category == "network"
     assert findings[0].severity == "low"
     assert findings[0].title == "Network interface errors detected"
+    assert findings[0].is_observation is False
     assert "eth0" in findings[0].detail
 
 
-def test_assess_system_ignores_healthy_snapshot():
-    snapshot = empty_snapshot()
+def test_assess_system_observations_do_not_increase_risk_score():
+    snapshot = empty_snapshot(
+        connections=[
+            ConnectionInfo(
+                protocol="tcp",
+                state="ESTAB",
+                local="192.0.2.10:50000",
+                remote="198.51.100.20:443",
+                process="example-client",
+            ),
+            ConnectionInfo(
+                protocol="tcp",
+                state="LISTEN",
+                local="0.0.0.0:22",
+                remote="*:*",
+                process="sshd",
+            ),
+        ]
+    )
 
     findings = assess_system(snapshot)
 
-    assert findings == []
+    assert len(findings) == 2
+    assert all(finding.is_observation for finding in findings)
+    assert calculate_risk_score(findings) == 0
