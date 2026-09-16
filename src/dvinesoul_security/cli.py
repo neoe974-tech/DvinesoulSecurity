@@ -102,6 +102,7 @@ def inspect_file(
     baseline: str | None = None,
 ) -> None:
     from dvinesoul_security.report.inspection import inspect_file as build_report
+    from dvinesoul_security.report.text import report_to_text
 
     report = build_report(
         file,
@@ -109,72 +110,7 @@ def inspect_file(
         baseline=baseline,
     )
 
-    print("=" * 60)
-    print("              DVINESOUL SECURITY INSPECT")
-    print("=" * 60)
-    print()
-
-    sections = report.sections
-
-    file_result = sections.get("file")
-    if file_result:
-        print("=== File Analysis ===")
-        print()
-        print(f"Path       : {file_result['path']}")
-        print(f"Size       : {file_result['size']} bytes")
-        print(f"Mode       : {file_result['mode']}")
-        print(f"Owner UID  : {file_result['owner_uid']}")
-        print(f"Group GID  : {file_result['group_gid']}")
-        print(f"Type       : {file_result['file_type']}")
-        print(f"SHA-256    : {file_result['sha256']}")
-        print(f"Executable : {'yes' if file_result['executable'] else 'no'}")
-        print()
-
-    elf_result = sections.get("elf")
-    if elf_result:
-        print("=== ELF ===")
-        print()
-        print(f"Path        : {elf_result['path']}")
-        print(f"ELF         : {'yes' if elf_result['is_elf'] else 'no'}")
-        print(f"File type   : {elf_result['file_type']}")
-        if elf_result["is_elf"]:
-            print(f"Class       : {elf_result['architecture']}")
-            print(f"Entry point : {elf_result['entry_point']}")
-        print()
-
-    strings_result = sections.get("strings")
-    if strings_result:
-        print("=== STRINGS ===")
-        print()
-        values = strings_result["values"]
-        print(f"Showing {len(values)} strings:")
-        print()
-        for index, value in enumerate(values[:30], start=1):
-            print(f"{index:>3}: {value}")
-        print()
-
-    yara_result = sections.get("yara")
-    if yara_result:
-        print("=== YARA ===")
-        print()
-        print(f"Rules   : {yara_result['rules']}")
-        print(f"Matches : {yara_result['match_count']}")
-        print()
-        for match in yara_result["matches"]:
-            print(f"  {match['rule']:<30} {match['file']}")
-        print()
-
-    integrity_result = sections.get("integrity")
-    if integrity_result:
-        print("=== INTEGRITY ===")
-        print()
-        print(f"File     : {integrity_result['path']}")
-        print(f"Status   : {integrity_result['status']}")
-        if integrity_result["expected_sha256"]:
-            print(f"Expected : {integrity_result['expected_sha256']}")
-        if integrity_result["actual_sha256"]:
-            print(f"Actual   : {integrity_result['actual_sha256']}")
-        print()
+    print(report_to_text(report))
 
 
 def main() -> None:
