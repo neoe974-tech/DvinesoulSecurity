@@ -38,6 +38,7 @@ def create_baseline(path: str | Path, baseline_file: str | Path) -> str:
 def check_integrity(
     path: str | Path,
     baseline_file: str | Path,
+    actual_sha256: str | None = None,
 ) -> IntegrityResult:
     target = Path(path).resolve()
     baseline = Path(baseline_file).resolve()
@@ -55,7 +56,10 @@ def check_integrity(
     except OSError:
         expected = None
 
-    actual = _sha256(target)
+    if actual_sha256 is None:
+        actual_sha256 = _sha256(target)
+
+    actual = actual_sha256
 
     if expected is None:
         status = "NO_BASELINE"

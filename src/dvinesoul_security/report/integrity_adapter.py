@@ -8,7 +8,14 @@ def add_integrity_analysis(
     report: InspectionReport,
     baseline_file: str,
 ) -> None:
-    result = check_integrity(report.path, baseline_file)
+    file_section = report.sections.get("file", {})
+    actual_sha256 = file_section.get("sha256")
+
+    result = check_integrity(
+        report.path,
+        baseline_file,
+        actual_sha256=actual_sha256,
+    )
 
     report.add_section(
         "integrity",
