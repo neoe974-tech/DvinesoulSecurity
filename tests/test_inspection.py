@@ -40,3 +40,41 @@ def test_inspect_file_includes_assessment(tmp_path: Path):
     assert assessment["risk_score"] == 3
     assert assessment["findings"][0]["category"] == "strings"
     assert assessment["findings"][0]["severity"] == "medium"
+
+
+def test_inspect_file_includes_yara_assessment(tmp_path: Path):
+    test_file = tmp_path / "sample.txt"
+    test_file.write_text("DVINESOUL_YARA_TEST\n")
+
+    yara_file = tmp_path / "test.yar"
+    yara_file.write_text(
+        """
+rule DvinesoulTestRule
+{
+    strings:
+        $marker = "DVINESOUL_YARA_TEST"
+
+    condition:
+        $marker
+}
+"""
+    )
+
+    report = inspect_file(
+        str(test_file),
+        yara_rules=str(yara_file),
+    )
+
+    assert "yara" in report.sections
+
+    yara = report.sections["yara"]
+
+    assert yara["match_count"] == 1
+    assert yara["matches"][0]["rule"] == "DvinesoulTestRule"
+
+    assessment = report.sections["assessment"]
+
+    assert assessment["finding_count"] == 1
+    assert assessment["risk_score"] == 6
+    assert assessment["findings"][0]["category"] == "yara"
+    assert assessment["findings"][0]["severity"] == "high"
