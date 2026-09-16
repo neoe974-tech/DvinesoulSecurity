@@ -66,6 +66,7 @@ def assess_report(report: Any) -> list[Finding]:
                 break
 
     yara = report.sections.get("yara", {})
+
     for match in yara.get("matches", []):
         rule = match.get("rule", "unknown")
 
@@ -79,8 +80,9 @@ def assess_report(report: Any) -> list[Finding]:
         )
 
     integrity = report.sections.get("integrity", {})
+    integrity_status = integrity.get("status")
 
-    if integrity.get("matches") is False:
+    if integrity_status == "MODIFIED":
         findings.append(
             Finding(
                 category="integrity",

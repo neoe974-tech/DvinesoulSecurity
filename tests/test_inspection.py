@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from dvinesoul_security.report.inspection import inspect_file
+from dvinesoul_security.security.integrity import create_baseline
 
 
 def test_inspect_file_collects_file_and_strings(tmp_path: Path):
@@ -77,4 +78,33 @@ rule DvinesoulTestRule
     assert assessment["finding_count"] == 1
     assert assessment["risk_score"] == 6
     assert assessment["findings"][0]["category"] == "yara"
+    assert assessment["findings"][0]["severity"] == "high"
+
+
+def test_inspect_file_detects_integrity_mismatch(tmp_path: Path):
+    test_file = tmp_path / "sample.txt"
+    baseline_file = tmp_path / "sample.sha256"
+
+    test_file.write_text("ORIGINAL_CONTENT\n")
+    create_baseline(test_file, baseline_file)
+
+    test_file.write_text("MODIFIED_CONTENT\n")
+
+    report = inspect_file(
+        str(test_file),
+        baseline=str(baseline_file),
+    )
+
+    integrity = report.sections["integrity"]
+
+    assert integrity["status"] == "MODIFIED"
+    assert integrity["expected_sha256"]
+    assert integrity["actual_sha256"]
+    assert integrity["expected_sha256"] != integrity["actual_sha256"]
+
+    assessment = report.sections["assessment"]
+
+    assert assessment["finding_count"] == 1
+    assert assessment["risk_score"] == 6
+    assert assessment["findings"][0]["category"] == "integrity"
     assert assessment["findings"][0]["severity"] == "high"
