@@ -27,6 +27,7 @@ def test_snapshot_to_text_renders_system_data():
         services=[],
         interfaces=[],
         connections=[],
+        files=[],
     )
 
     output = snapshot_to_text(snapshot)

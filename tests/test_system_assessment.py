@@ -18,6 +18,7 @@ def empty_snapshot(
         services=services or [],
         interfaces=interfaces or [],
         connections=connections or [],
+        files=[],
     )
 
 

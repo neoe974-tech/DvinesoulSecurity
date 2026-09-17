@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 import hashlib
+import json
 from dataclasses import dataclass
 from pathlib import Path
+
+from dvinesoul_security.core.files import FileInfo
 
 
 @dataclass
@@ -97,3 +100,50 @@ def print_integrity_check(
 
     if result.actual_sha256:
         print(f"Actual   : {result.actual_sha256}")
+
+
+def baseline_to_dict(files: list[FileInfo]) -> list[dict]:
+    return [
+        {
+            "path": item.path,
+            "file_type": item.file_type,
+            "size": item.size,
+            "modified_ns": item.modified_ns,
+            "sha256": item.sha256,
+        }
+        for item in files
+    ]
+
+
+def save_baseline(
+    files: list[FileInfo],
+    path: str | Path,
+) -> None:
+    target = Path(path)
+
+    target.write_text(
+        json.dumps(
+            baseline_to_dict(files),
+            indent=2,
+            sort_keys=True,
+        )
+    )
+
+
+def load_baseline(
+    path: str | Path,
+) -> list[FileInfo]:
+    target = Path(path)
+
+    data = json.loads(target.read_text())
+
+    return [
+        FileInfo(
+            path=item["path"],
+            file_type=item["file_type"],
+            size=item["size"],
+            modified_ns=item["modified_ns"],
+            sha256=item["sha256"],
+        )
+        for item in data
+    ]
