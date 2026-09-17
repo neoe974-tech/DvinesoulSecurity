@@ -5,6 +5,8 @@ from dvinesoul_security.core.snapshot_text import snapshot_to_text
 from dvinesoul_security.report.inspection import inspect_file
 from dvinesoul_security.report.json import report_to_json
 from dvinesoul_security.report.text import report_to_text
+from dvinesoul_security.report.system_json import system_report_to_json
+from dvinesoul_security.report.system_models import SystemAssessmentReport
 from dvinesoul_security.security.system_assessment import assess_system
 from dvinesoul_security.security.system_assessment_text import (
     system_assessment_to_text,
@@ -53,9 +55,15 @@ def build_parser() -> argparse.ArgumentParser:
         help="Path to an integrity baseline file.",
     )
 
-    subparsers.add_parser(
+    system_parser = subparsers.add_parser(
         "system",
         help="Show a read-only system snapshot and assessment.",
+    )
+
+    system_parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Output the system assessment as JSON.",
     )
 
     return parser
@@ -82,10 +90,15 @@ def main() -> int:
 
     if args.command == "system":
         snapshot = collect_system_snapshot()
+        findings = assess_system(snapshot)
 
-        print(snapshot_to_text(snapshot))
-        print()
-        print(system_assessment_to_text(assess_system(snapshot)))
+        if args.json:
+            report = SystemAssessmentReport(findings=findings)
+            print(system_report_to_json(report))
+        else:
+            print(snapshot_to_text(snapshot))
+            print()
+            print(system_assessment_to_text(findings))
 
         return 0
 
