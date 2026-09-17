@@ -2,6 +2,9 @@ from __future__ import annotations
 
 from dvinesoul_security.core.snapshot import SystemSnapshot
 from dvinesoul_security.security.assessment import Finding
+from dvinesoul_security.security.detections.command_lines import (
+    detect_suspicious_command_lines,
+)
 from dvinesoul_security.security.detections.processes import (
     detect_suspicious_process_locations,
 )
@@ -12,6 +15,10 @@ def assess_system(snapshot: SystemSnapshot) -> list[Finding]:
 
     findings.extend(
         detect_suspicious_process_locations(snapshot.processes)
+    )
+
+    findings.extend(
+        detect_suspicious_command_lines(snapshot.processes)
     )
 
     failed_services = [
